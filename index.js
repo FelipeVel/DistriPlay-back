@@ -1,10 +1,10 @@
 const express = require("express"),
     app = express(),
     puerto = process.env.PORT || 3080,
-    cors = require('cors'),
     bodyParser = require('body-parser');
 
-app.use(cors());
+require('dotenv').config();
+
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ type: '*/*' }));

@@ -4,32 +4,35 @@ const controller = {};
 
 controller.getCompra = async (req, res) => {
     const { id } = req.params;
-    const compra = await utilities.executeQuery('SELECT * FROM Compra WHERE idCompra = ?', [id]);
-    if (compra.stack) {
+    const compra = await utilities.executeQuery('SELECT * FROM Compra WHERE id = $1', [id]);
+    if (compra.error) {
         res.json({ status: 'Error al obtener compra' });
-    }
-    res.json(compra);
+    } else
+    res.json(compra.rows[0]);
 }
 
 controller.getComprasByCliente = async (req, res) => {
     const { id } = req.params;
-    const compras = await utilities.executeQuery('SELECT * FROM Compra WHERE idCliente = ?', [id]);
-    if (compras.stack) {
+    const compras = await utilities.executeQuery('SELECT * FROM Compra WHERE usuario = %1', [id]);
+    if (compras.error) {
         res.json({ status: 'Error al obtener compras' });
-    }
-    res.json(compras);
+    } else
+    res.json(compras.rows);
 }
 
 controller.createCompra = async (req, res) => {
-    const { idCliente, listaVideojuegosCantidad, fecha, estatus } = req.body;
-    const compra = await utilities.executeQuery('INSERT INTO Compra (idCliente, fecha, estatus) VALUES (?, ?, ?)', [idCliente, fecha, estatus]);
-    if (compra.stack) {
+    const { idCliente, listaVideojuegos, estatus } = req.body;
+    const fecha = new Date();
+    const compra = await utilities.executeQuery('INSERT INTO Compra (usuario, fecha, estatus) VALUES (%1, %2, %3)', [idCliente, utilities.formatoFecha(fecha), estatus]);
+    if (compra.error) {
         res.json({ status: 'Error al crear compra' });
-    }
-    for (const juego in listaVideojuegosCantidad) {
-        const videojuego = await utilities.executeQuery('INSERT INTO VideojuegoCompra (idVideojuego, idCompra, cantidad) VALUES (?, ?, ?)', [juego, compra.insertId, listaVideojuegosCantidad[key]]);
-        if (videojuego.stack) {
-            res.json({ status: 'Error al crear videojuegoCompra' });
+        return;
+    } else
+    for (const juego in listaVideojuegos) {
+        const videojuego = await utilities.executeQuery('INSERT INTO compra_juego (compra, juego) VALUES (%1, %2)', [compra.insertId, juego]);
+        if (videojuego.error) {
+            res.json({ status: 'Error al crear relacion videojuegoCompra' });
+            return;
         }
     }
     res.json({ status: 'Successful', data: compra });

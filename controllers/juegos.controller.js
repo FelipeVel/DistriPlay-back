@@ -4,20 +4,24 @@ const controller = {};
 
 controller.getJuegos = async (req, res) => {
     const queryFilters = req.query;
-    let query = 'SELECT * FROM Videojuego';
+    console.log(queryFilters);
+    let query = 'SELECT * FROM videojuego';
     let params = [];
-    if (queryFilters) {
+    if (Object.keys(queryFilters).length > 0) {
         query += ' WHERE';
+        let count = 0;
         if (queryFilters.nombre) {
-            query += ' nombre LIKE ?';
-            params.push(`%${queryFilters.pull}%`);
+            count++;
+            query += ' nombre LIKE $'+count;
+            params.push(`%${queryFilters.nombre}%`);
             delete queryFilters.nombre;
             if (Object.keys(queryFilters).length > 0) {
                 query += ' AND';
             }
         }
         if (queryFilters.genero) {
-            query += ' genero LIKE ?';
+            count++;
+            query += ' genero LIKE $'+count;
             params.push(`%${queryFilters.genero}%`);
             delete queryFilters.genero;
             if (Object.keys(queryFilters).length > 0) {
@@ -25,7 +29,8 @@ controller.getJuegos = async (req, res) => {
             }
         }
         if (queryFilters.plataforma) {
-            query += ' plataforma LIKE ?';
+            count++;
+            query += ' plataforma LIKE $'+count;
             params.push(`%${queryFilters.plataforma}%`);
             delete queryFilters.plataforma;
             if (Object.keys(queryFilters).length > 0) {
@@ -33,7 +38,8 @@ controller.getJuegos = async (req, res) => {
             }
         }
         if (queryFilters.costoMax) {
-            query += ' costo <= ?';
+            count++;
+            query += ' costo <= $'+count;
             params.push(queryFilters.costoMax);
             delete queryFilters.costoMax;
             if (Object.keys(queryFilters).length > 0) {
@@ -41,7 +47,8 @@ controller.getJuegos = async (req, res) => {
             }
         }
         if (queryFilters.costoMin) {
-            query += ' costo >= ?';
+            count++;
+            query += ' costo >= $'+count;
             params.push(queryFilters.costoMin);
             delete queryFilters.costoMin;
             if (Object.keys(queryFilters).length > 0) {
@@ -49,7 +56,8 @@ controller.getJuegos = async (req, res) => {
             }
         }
         if (queryFilters.idioma) {
-            query += ' idioma LIKE ?';
+            count++;
+            query += ' idioma LIKE $'+count;
             params.push(`%${queryFilters.idioma}%`);
             delete queryFilters.idioma;
             if (Object.keys(queryFilters).length > 0) {
@@ -57,7 +65,8 @@ controller.getJuegos = async (req, res) => {
             }
         }
         if (queryFilters.clasificacion) {
-            query += ' clasificacion LIKE ?';
+            count++;
+            query += ' clasificacion LIKE $'+count;
             params.push(`%${queryFilters.clasificacion}%`);
             delete queryFilters.clasificacion;
             if (Object.keys(queryFilters).length > 0) {
@@ -65,34 +74,35 @@ controller.getJuegos = async (req, res) => {
             }
         }
         if (queryFilters.productor) {
-            query += ' productor LIKE ?';
+            count++;
+            query += ' productor LIKE $'+count;
             params.push(`%${queryFilters.productor}%`);
             delete queryFilters.productor;
         }
     }
     const juegos = await utilities.executeQuery(query, params);
-    if (juegos.stack) {
+    if (juegos.error) {
         res.json({ status: 'Error al obtener juegos' });
-    }
-    res.json(juegos);
+    } else
+    res.json(juegos.rows);
 };
 
 controller.getJuego = async (req, res) => {
     const { id } = req.params;
-    const juegos = await utilities.executeQuery('SELECT * FROM Videojuego WHERE idVideojuego = ?', [id]);
-    if (juegos.stack) {
+    const juegos = await utilities.executeQuery('SELECT * FROM videojuego WHERE id= $1', [id]);
+    if (juegos.error) {
         res.json({ status: 'Error al obtener juego' });
-    }
-    res.json(juegos);
+    } else
+    res.json(juegos.rows[0]);
 };
 
 controller.getJuegoByNombre = async (req, res) => {
     const { nombre } = req.params;
-    const juegos = await utilities.executeQuery('SELECT * FROM Videojuego WHERE nombre = ?', [nombre]);
-    if (juegos.stack) {
+    const juegos = await utilities.executeQuery('SELECT * FROM videojuego WHERE nombre = $1', [nombre]);
+    if (juegos.error) {
         res.json({ status: 'Error al obtener juego' });
-    }
-    res.json(juegos);
+    } else
+    res.json(juegos.rows[0]);
 };
 
 module.exports = controller;

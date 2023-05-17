@@ -12,16 +12,25 @@ const executeQuery = async (query, params = []) => {
     const client = new Client(connectionData);
     try {
         await client.connect();
+        console.log(query, params)
         const res = await client.query(query, params);
         client.end();
         return res;
     } catch (err) {
-        console.log(err.stack);
+        console.error(err.stack);
         client.end();
-        return err;
+        return {error: err.stack};
     }
+}
+
+const formatoFecha = (fecha) => {
+    const day = fecha.getDate();
+    const month = fecha.getMonth() > 8 ? fecha.getMonth() + 1 : `0${fecha.getMonth() + 1}`;
+    const year = fecha.getFullYear()
+    return `${year}-${month}-${day}`;
 }
 
 module.exports = {
     executeQuery,
+    formatoFecha
 }
