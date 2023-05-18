@@ -10,10 +10,14 @@ const connectionData = {
 
 const executeQuery = async (query, params = []) => {
     const client = new Client(connectionData);
+    const queryToExecute = {
+        text: query,
+        values: params
+    }
     try {
         await client.connect();
         console.log(query, params)
-        const res = await client.query(query, params);
+        const res = await client.query(queryToExecute);
         client.end();
         return res;
     } catch (err) {
