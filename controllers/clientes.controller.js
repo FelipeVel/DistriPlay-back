@@ -42,4 +42,25 @@ controller.createCliente = async (req, res) => {
     res.json({ status: 'Successful'});
 }
 
+controller.loginCliente = async (req, res) => {
+    const { usuario, contrasena } = req.body;
+    const cliente = await utilities.executeQuery('SELECT * FROM cliente WHERE usuario = $1', [usuario]);
+    if (cliente.error) {
+        res.json({ status: 'Error al obtener cliente' });
+        return;
+    } else if (cliente.rows.length == 0) {
+        res.json({ status: 'Cliente no encontrado' });
+        return;
+    }
+    const usuarioRes = await utilities.executeQuery('SELECT * FROM usuario WHERE usuario = $1 AND contraseña = $2', [usuario, contrasena]);
+    if (usuarioRes.error) {
+        res.json({ status: 'Error al obtener usuario' });
+        return;
+    } else if (usuarioRes.rows.length == 0) {
+        res.json({ status: 'Usuario no encontrado' });
+        return;
+    }
+    res.json({ status: 'Successful', data: cliente.rows[0] });
+}
+
 module.exports = controller;
