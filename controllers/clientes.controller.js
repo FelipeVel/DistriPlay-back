@@ -28,8 +28,12 @@ controller.getCliente = async (req, res) => {
 };
 
 controller.createCliente = async (req, res) => {
-    const { cedula, nombres, apellidos, usuario, correo, telefono, pais, contrasena } = req.body;
-    const usuarioRes = await utilities.executeQuery('INSERT INTO usuario (usuario, contraseña) VALUES ($1, $2)', [usuario, contrasena]);
+    const { cedula, nombres, apellidos, usuario, correo, telefono, pais, contrasena, contrasena2 } = req.body;
+    if (contrasena != contrasena2) {
+        res.json({ status: 'Las contraseñas no coinciden' });
+        return;
+    }
+    const usuarioRes = await utilities.executeQuery(`INSERT INTO usuario (usuario, contraseña,rol) VALUES ($1, $2, 'client')`, [usuario, contrasena]);
     if (usuarioRes.error) {
         res.json({ status: 'Error al crear usuario' });
         return;
@@ -57,10 +61,14 @@ controller.loginCliente = async (req, res) => {
         res.json({ status: 'Error al obtener usuario' });
         return;
     } else if (usuarioRes.rows.length == 0) {
-        res.json({ status: 'Usuario no encontrado' });
+        res.status(404).json({ status: 'Usuario no encontrado' });
         return;
     }
-    res.json({ status: 'Successful', data: cliente.rows[0] });
+    const response = {
+        ...cliente.rows[0],
+        rol: usuarioRes.rows[0].rol
+    }
+    res.json({ status: 'Successful', data: response });
 }
 
 module.exports = controller;
